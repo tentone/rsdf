@@ -2,8 +2,7 @@
 name = "rsdf"
 version = "0.1.0"
 authors = ["Tentone <tentone@outlook.com>"]
-edition = "2018"
 
 [dependencies]
-rand = "0.8.3"
-sdl2 = "0.31.0"
+glutin = "0.26.0"
+glium = "0.29.0"
