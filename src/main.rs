@@ -28,13 +28,16 @@ fn main() {
 
     let display: Display = glium::Display::new(window, context, &event_loop).unwrap();
 
-    let shape: Vec<Vertex> = vec![
-        Vertex{position: [-0.5, -0.5]},
-        Vertex{position: [0.0,  0.5]},
-        Vertex{position: [ 0.5, -0.25]}
+    let quad: Vec<Vertex> = vec![
+        Vertex{position: [-1.0, -1.0]},
+        Vertex{position: [1.0,  1.0]},
+        Vertex{position: [1.0, -1.0]},
+        Vertex{position: [-1.0, 1.0]},
+        Vertex{position: [1.0,  1.0]},
+        Vertex{position: [-1.0, -1.0]}
     ];
 
-    let vertex_buffer = glium::VertexBuffer::new(&display, &shape).unwrap();
+    let vertex_buffer = glium::VertexBuffer::new(&display, &quad).unwrap();
     let indices = glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);
 
     let vertex_shader: &str = r#"
