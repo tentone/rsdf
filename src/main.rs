@@ -9,6 +9,7 @@ use std::time::Instant;
 use glutin::event::Event;
 use glium::Surface;
 use glium::implement_vertex;
+use glium::uniform;
 
 // Structure to represent a vertex
 #[derive(Copy, Clone)]
@@ -45,6 +46,8 @@ fn main() {
 
         in vec2 position;
 
+        uniform float time;
+
         void main() {
             gl_Position = vec4(position, 0.0, 1.0);
         }
@@ -55,23 +58,33 @@ fn main() {
 
         out vec4 color;
 
+        uniform float time;
+
         void main() {
-            color = vec4(1.0, 0.0, 0.0, 1.0);
+            float t = time / 10.0;
+            color = vec4(sin(t), cos(t), 0.0, 1.0);
         }
     "#;
 
     let program = glium::Program::from_source(&display, vertex_shader, fragment_shader, None).unwrap();
 
+    let mut time: f32 = 0.0;
+    let frame: u64 = 16;
+
     event_loop.run(move |event: Event<()>, _, control_flow| {
         let mut target = display.draw();
 
+        time += (frame as f32) / 1e3;
+
         target.clear_color(0.0, 0.0, 1.0, 1.0);
 
-        target.draw(&vertex_buffer, &indices, &program, &glium::uniforms::EmptyUniforms, &Default::default()).unwrap();
+        let uniforms = &uniform! { time: time };
+
+        target.draw(&vertex_buffer, &indices, &program, uniforms, &Default::default()).unwrap();
 
         target.finish().unwrap();
 
-        let next_frame: Instant = std::time::Instant::now() + std::time::Duration::from_millis(16);
+        let next_frame: Instant = std::time::Instant::now() + std::time::Duration::from_millis(frame);
         *control_flow = glutin::event_loop::ControlFlow::WaitUntil(next_frame);
 
         match event {
