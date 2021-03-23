@@ -1,11 +1,12 @@
 extern crate glium;
 extern crate glutin;
 
-use glium::Display;
+use std::time::Instant;
+
+use glium::{Display, Frame};
 use glutin::window::WindowBuilder;
 use glutin::event_loop::EventLoop;
 use glutin::{ContextBuilder, NotCurrent};
-use std::time::Instant;
 use glutin::event::Event;
 use glium::Surface;
 use glium::implement_vertex;
@@ -45,33 +46,27 @@ fn main() {
     let program = glium::Program::from_source(&display, include_str!("vertex.glsl"), include_str!("fragment.glsl"), None).unwrap();
 
     // Frame time in milliseconds
-    let frame: u64 = 16;
-
-    // Time counter
-    let mut time: f32 = 0.0;
+    let start: Instant = std::time::Instant::now();
 
     // Window resolution
     let resolution: [f32;  2] = [800.0, 600.0];
 
     event_loop.run(move |event: Event<()>, _, control_flow| {
-        let mut target = display.draw();
-
-        time += (frame as f32) / 1e3;
-
-        target.clear_color(0.0, 0.0, 1.0, 1.0);
+        let time = start.elapsed().as_secs_f32();
+        // let res = display.gl_window().get_inner_size_pixels();
+        // resolution = [res[0], res[1]];
 
         let uniforms = &uniform! {
             resolution: resolution,
             time: time,
         };
 
-        target.draw(&vertex_buffer, &indices, &program, uniforms, &Default::default()).unwrap();
+        let mut frame: Frame = display.draw();
+        frame.clear_color(0.0, 0.0, 0.0, 1.0);
+        frame.draw(&vertex_buffer, &indices, &program, uniforms, &Default::default()).unwrap();
+        frame.finish().unwrap();
 
-        target.finish().unwrap();
-
-        let next_frame: Instant = std::time::Instant::now() + std::time::Duration::from_millis(frame);
-        *control_flow = glutin::event_loop::ControlFlow::WaitUntil(next_frame);
-
+        // Event handler
         match event {
             glutin::event::Event::WindowEvent { event, .. } => match event {
                 glutin::event::WindowEvent::CloseRequested => {
