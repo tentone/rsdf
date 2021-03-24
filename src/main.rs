@@ -22,7 +22,10 @@ struct Vertex {
 implement_vertex!(Vertex, position);
 
 fn main() {
-    let window: WindowBuilder = glutin::window::WindowBuilder::new();
+    let window: WindowBuilder = glutin::window::WindowBuilder::new()
+        .with_title("RSDF")
+        .with_resizable(false)
+        .with_inner_size(glutin::dpi::LogicalSize::new(1024.0, 768.0));
 
     let context: ContextBuilder<NotCurrent> = glutin::ContextBuilder::new();
 
@@ -49,16 +52,17 @@ fn main() {
     let start: Instant = std::time::Instant::now();
 
     // Window resolution
-    let resolution: [f32;  2] = [800.0, 600.0];
+    let resolution: [f32;  2] = [1024.0, 768.0];
+
+    let eye: [f32; 3] = [8.0, 5.0, 7.0];
 
     event_loop.run(move |event: Event<()>, _, control_flow| {
         let time = start.elapsed().as_secs_f32();
-        // let res = display.gl_window().get_inner_size_pixels();
-        // resolution = [res[0], res[1]];
 
         let uniforms = &uniform! {
             resolution: resolution,
             time: time,
+            eye: eye,
         };
 
         let mut frame: Frame = display.draw();
