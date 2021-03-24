@@ -1,7 +1,6 @@
 #version 140
 
 in vec2 position;
-
 uniform float time;
 
 void main() {

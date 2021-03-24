@@ -17,8 +17,8 @@ const float EPSILON = 0.0001;
  *
  * Returns the maximum distance between the two.
  */
-float intersectSDF(float distA, float distB) {
-    return max(distA, distB);
+float intersectSDF(float a, float b) {
+    return max(a, b);
 }
 
 /**
@@ -26,16 +26,33 @@ float intersectSDF(float distA, float distB) {
  *
  * Returns the minimum distance between the two.
  */
-float unionSDF(float distA, float distB) {
-    return min(distA, distB);
-}
-
-float differenceSDF(float distA, float distB) {
-    return max(distA, -distB);
+float unionSDF(float a, float b) {
+    return min(a, b);
 }
 
 /**
- * Signed distance function for a sphere centered at the origin with radius 1.0;
+ * Diference between two SDF.
+ */
+float differenceSDF(float a, float b) {
+    return max(a, -b);
+}
+
+
+/**
+ * SDF for a segment that start in a and ends in b with radius r.
+ *
+ * p: Point to test in the SDF.
+ * a: Origin point of the segment.
+ * b: End point of the segment.
+ * r: Radius of the line segment.
+ */
+float segmentSDF(vec3 p, vec3 a, vec3 b, float r) {
+    float h = min(1.0, max(0.0, dot(p - a, b - a) / dot(b - a, b - a)));
+    return length(p - a - (b - a) * h) - r;
+}
+
+/**
+ * SDF for a sphere centered at the origin with radius 1.0;
  *
  * p: Point to test in the sphere
  * origin: Origin point of the sphere.
@@ -46,13 +63,14 @@ float sphereSDF(vec3 p, vec3 origin, float radius) {
 }
 
 /**
- * Signed distance function for a cube centered at the origin with width = height = length = 2.0
+ * SDF for a cube centered at the origin with width = height = length = 2.0
  *
  * p: Point to test in the cube
  * center: Center of the cube
  * size: Size of the cube
  */
 float cubeSDF(vec3 p, vec3 center, vec3 size) {
+    // Apply offset the point to move the cube
     p -= center;
 
     // If d.x < 0, then -1 < p.x < 1, and same logic applies to p.y, p.z, if all components of d are negative, then p is inside the unit cube
@@ -67,22 +85,32 @@ float cubeSDF(vec3 p, vec3 center, vec3 size) {
     return insideDistance + outsideDistance;
 }
 
+/**
+ * Iso surface of a SDF can be used to make the surface on an SDF rounder.
+ *
+ * For all point in the SDF an iso surface is a surface distanced from the original surface by r.
+ *
+ * a: Distance to the base surface
+ * r: Radius of the iso surface.
+ */
+float isoSurfaceSDF(float a, float r) {
+    return a - r;
+}
 
 /**
- * Signed distance function describing the scene.
+ * SDF describing the scene.
  * Absolute value of the return value indicates the distance to the surface.
  * Sign indicates whether the point is inside or outside the surface,negative indicating inside.
  *
  * p: Point to test in the scene
  */
 float sceneSDF(vec3 p) {
-    float a = sphereSDF(p, vec3(-0.8, 0, 0), 1.0);
-    float b = sphereSDF(p, vec3(0.8, 0, 0), 1.0);
-    float c = unionSDF(a, b);
+    float o = sphereSDF(p, vec3(-0.6, 0, 0), 0.5);
+    o = unionSDF(o, sphereSDF(p, vec3(0.6, 0, 0), 0.5));
+    o = unionSDF(o, cubeSDF(p, vec3(0, 2.0, 2.0), vec3(0.3, 0.3, 0.3)));
+    o = unionSDF(o, segmentSDF(p, vec3(0, 0, 0), vec3(0.0, 2.0, 0), 0.3));
 
-    float d = cubeSDF(p, vec3(0, 2.0, 0), vec3(0.3, 3.0, 0.3));
-
-    return unionSDF(c, d);
+    return isoSurfaceSDF(o, 0.1);
 }
 
 /**
@@ -149,8 +177,6 @@ vec3 estimateNormal(vec3 p) {
  * eye: the position of the camera
  * lightPos: the position of the light
  * lightIntensity: color/intensity of the light
- *
- * See https://en.wikipedia.org/wiki/Phong_reflection_model#Description
  */
 vec3 phongContribForLight(vec3 k_d, vec3 k_s, float alpha, vec3 p, vec3 eye, vec3 lightPos, vec3 lightIntensity) {
     vec3 N = estimateNormal(p);
@@ -185,8 +211,6 @@ vec3 phongContribForLight(vec3 k_d, vec3 k_s, float alpha, vec3 p, vec3 eye, vec
  * alpha: Shininess coefficient
  * p: position of point being lit
  * eye: the position of the camera
- *
- * See https://en.wikipedia.org/wiki/Phong_reflection_model#Description
  */
 vec3 phongIllumination(vec3 k_a, vec3 k_d, vec3 k_s, float alpha, vec3 p, vec3 eye) {
     // Ambient Light
@@ -224,7 +248,6 @@ mat4 viewMatrix(vec3 eye, vec3 center, vec3 up) {
         vec4(0.0, 0.0, 0.0, 1)
     );
 }
-
 
 void main() {
     vec2 fragCoord = gl_FragCoord.xy;
