@@ -12,10 +12,20 @@ const float MIN_DIST = 0.0;
 const float MAX_DIST = 100.0;
 const float EPSILON = 0.0001;
 
+/**
+ * Intersection of the result from two different SDF.
+ *
+ * Returns the maximum distance between the two.
+ */
 float intersectSDF(float distA, float distB) {
     return max(distA, distB);
 }
 
+/**
+ * Union of the result from two different SDF.
+ *
+ * Returns the minimum distance between the two.
+ */
 float unionSDF(float distA, float distB) {
     return min(distA, distB);
 }
@@ -26,6 +36,10 @@ float differenceSDF(float distA, float distB) {
 
 /**
  * Signed distance function for a sphere centered at the origin with radius 1.0;
+ *
+ * p: Point to test in the sphere
+ * origin: Origin point of the sphere.
+ * radius: Radius of the sphere.
  */
 float sphereSDF(vec3 p, vec3 origin, float radius) {
     return distance(p, origin) - radius;
@@ -33,18 +47,21 @@ float sphereSDF(vec3 p, vec3 origin, float radius) {
 
 /**
  * Signed distance function for a cube centered at the origin with width = height = length = 2.0
+ *
+ * p: Point to test in the cube
+ * center: Center of the cube
+ * size: Size of the cube
  */
-float cubeSDF(vec3 p) {
-    // If d.x < 0, then -1 < p.x < 1, and same logic applies to p.y, p.z
-    // So if all components of d are negative, then p is inside the unit cube
-    vec3 d = abs(p) - vec3(1.0, 1.0, 1.0);
+float cubeSDF(vec3 p, vec3 center, vec3 size) {
+    p -= center;
 
-    // Assuming p is inside the cube, how far is it from the surface?
-    // Result will be negative or zero.
+    // If d.x < 0, then -1 < p.x < 1, and same logic applies to p.y, p.z, if all components of d are negative, then p is inside the unit cube
+    vec3 d = abs(p) - size;
+
+    // Assuming p is inside the cube, how far is it from the surface. Result will be negative or zero.
     float insideDistance = min(max(d.x, max(d.y, d.z)), 0.0);
 
-    // Assuming p is outside the cube, how far is it from the surface?
-    // Result will be positive or zero.
+    // Assuming p is outside the cube, how far is it from the surface. Result will be positive or zero.
     float outsideDistance = length(max(d, 0.0));
 
     return insideDistance + outsideDistance;
@@ -55,9 +72,17 @@ float cubeSDF(vec3 p) {
  * Signed distance function describing the scene.
  * Absolute value of the return value indicates the distance to the surface.
  * Sign indicates whether the point is inside or outside the surface,negative indicating inside.
+ *
+ * p: Point to test in the scene
  */
-float sceneSDF(vec3 samplePoint) {
-    return sphereSDF(samplePoint, vec3(0, 0, 0), 1.0);
+float sceneSDF(vec3 p) {
+    float a = sphereSDF(p, vec3(-0.8, 0, 0), 1.0);
+    float b = sphereSDF(p, vec3(0.8, 0, 0), 1.0);
+    float c = unionSDF(a, b);
+
+    float d = cubeSDF(p, vec3(0, 2.0, 0), vec3(0.3, 3.0, 0.3));
+
+    return unionSDF(c, d);
 }
 
 /**
@@ -112,27 +137,6 @@ vec3 estimateNormal(vec3 p) {
 }
 
 /**
- * Return a transformation matrix that will transform a ray from view space
- * to world coordinates, given the eye point, the camera target, and an up vector.
- *
- * This assumes that the center of the camera is aligned with the negative z axis in
- * view space when calculating the ray marching direction.
- */
-mat4 viewMatrix(vec3 eye, vec3 center, vec3 up) {
-    vec3 f = normalize(center - eye);
-    vec3 s = normalize(cross(f, up));
-    vec3 u = cross(s, f);
-
-    return mat4(
-        vec4(s, 0.0),
-        vec4(u, 0.0),
-        vec4(-f, 0.0),
-        vec4(0.0, 0.0, 0.0, 1)
-    );
-}
-
-
-/**
  * Lighting contribution of a single point light source via Phong illumination.
  *
  * The vec3 returned is the RGB color of the light's contribution.
@@ -157,16 +161,16 @@ vec3 phongContribForLight(vec3 k_d, vec3 k_s, float alpha, vec3 p, vec3 eye, vec
     float dotLN = dot(L, N);
     float dotRV = dot(R, V);
 
+    // Light not visible from this point on the surface
     if (dotLN < 0.0) {
-        // Light not visible from this point on the surface
         return vec3(0.0, 0.0, 0.0);
     }
 
+    // Light reflection in opposite direction as viewer, apply only diffuse component
     if (dotRV < 0.0) {
-        // Light reflection in opposite direction as viewer, apply only diffuse
-        // component
         return lightIntensity * (k_d * dotLN);
     }
+
     return lightIntensity * (k_d * dotLN + k_s * pow(dotRV, alpha));
 }
 
@@ -174,6 +178,7 @@ vec3 phongContribForLight(vec3 k_d, vec3 k_s, float alpha, vec3 p, vec3 eye, vec
  * Lighting via Phong illumination.
  *
  * The vec3 returned is the RGB color of that point after lighting is applied.
+
  * k_a: Ambient color
  * k_d: Diffuse color
  * k_s: Specular color
@@ -184,35 +189,53 @@ vec3 phongContribForLight(vec3 k_d, vec3 k_s, float alpha, vec3 p, vec3 eye, vec
  * See https://en.wikipedia.org/wiki/Phong_reflection_model#Description
  */
 vec3 phongIllumination(vec3 k_a, vec3 k_d, vec3 k_s, float alpha, vec3 p, vec3 eye) {
+    // Ambient Light
     const vec3 ambientLight = 0.5 * vec3(1.0, 1.0, 1.0);
     vec3 color = ambientLight * k_a;
 
+    // Point Light 1
     vec3 light1Pos = vec3(4.0 * sin(time), 2.0, 4.0 * cos(time));
     vec3 light1Intensity = vec3(0.4, 0.4, 0.4);
 
-    color += phongContribForLight(k_d, k_s, alpha, p, eye,
-    light1Pos,
-    light1Intensity);
+    color += phongContribForLight(k_d, k_s, alpha, p, eye, light1Pos, light1Intensity);
 
-    vec3 light2Pos = vec3(2.0 * sin(0.37 * time),
-    2.0 * cos(0.37 * time),
-    2.0);
+    // Point Light 2
+    vec3 light2Pos = vec3(2.0 * sin(0.37 * time), 2.0 * cos(0.37 * time), 2.0);
     vec3 light2Intensity = vec3(0.4, 0.4, 0.4);
 
-    color += phongContribForLight(k_d, k_s, alpha, p, eye,
-    light2Pos,
-    light2Intensity);
+    color += phongContribForLight(k_d, k_s, alpha, p, eye, light2Pos, light2Intensity);
     return color;
+}
+
+/**
+ * Return a transformation matrix that will transform a ray from view space to world coordinates, given the eye point, the camera target, and an up vector.
+ *
+ * This assumes that the center of the camera is aligned with the negative z axis in view space when calculating the ray marching direction.
+ */
+mat4 viewMatrix(vec3 eye, vec3 center, vec3 up) {
+    vec3 f = normalize(center - eye);
+    vec3 s = normalize(cross(f, up));
+    vec3 u = cross(s, f);
+
+    return mat4(
+        vec4(s, 0.0),
+        vec4(u, 0.0),
+        vec4(-f, 0.0),
+        vec4(0.0, 0.0, 0.0, 1)
+    );
 }
 
 
 void main() {
     vec2 fragCoord = gl_FragCoord.xy;
 
-    vec3 dir = rayDirection(60.0, resolution.xy, fragCoord);
-    vec3 eye = vec3(0.0, 0.0, 5.0);
+    vec3 viewDir = rayDirection(60.0, resolution.xy, fragCoord);
+    vec3 eye = vec3(8.0, 5.0, 7.0);
 
-    float dist = shortestDistanceToSurface(eye, dir, MIN_DIST, MAX_DIST);
+    mat4 viewToWorld = viewMatrix(eye, vec3(0.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0));
+    vec3 worldDir = (viewToWorld * vec4(viewDir, 0.0)).xyz;
+
+    float dist = shortestDistanceToSurface(eye, worldDir, MIN_DIST, MAX_DIST);
 
     // Didn't hit anything draw background
     if (dist > MAX_DIST - EPSILON) {
@@ -221,7 +244,7 @@ void main() {
     }
 
     // The closest point on the surface to the eyepoint along the view ray
-    vec3 p = eye + dist * dir;
+    vec3 p = eye + dist * worldDir;
     vec3 K_a = vec3(0.1, 0.1, 0.1);
     vec3 K_d = vec3(0.3, 0.2, 0.2);
     vec3 K_s = vec3(1.0, 1.0, 1.0);
