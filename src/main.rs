@@ -84,7 +84,7 @@ fn main() {
                 },
                 _ => return,
             },
-            glutin::event::Event::DeviceEvent { event, device_id } => match event {
+            glutin::event::Event::DeviceEvent { event, device_id: _ } => match event {
                 glutin::event::DeviceEvent::Key(kin) => {
                     let speed: f32 = 750.0 * delta;
 
@@ -97,7 +97,7 @@ fn main() {
                     // D
                     if kin.scancode == 32 { eye[0] += speed; }
 
-                    // println!("DeviceEvent Key: {:?} DeviceId: {:?}", kin, device_id);
+                    // println!("DeviceEvent Key: {:?}", kin);
                 },
                 _ => {},
             },

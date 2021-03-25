@@ -67,11 +67,12 @@ float sphereSDF(vec3 p, vec3 origin, float radius) {
  * SDF for a torus geometry.
  *
  * p: Point to test in the surface.
- * t: Shape of the torus
+ * r: Radius of the torus
+ * t: Thickness of the torus arc.
  */
-float torusSDF(vec3 p, vec2 t) {
-    vec2 q = vec2(length(p.xz) - t.x, py);
-    return length(q) - t.y;
+float torusSDF(vec3 p, float r, float t) {
+    vec2 q = vec2(length(p.xz) - r, p.y);
+    return length(q) - t;
 }
 
 /**
@@ -121,8 +122,9 @@ float sceneSDF(vec3 p) {
     o = unionSDF(o, sphereSDF(p, vec3(0.6, 0, 0), 0.5));
     o = unionSDF(o, cubeSDF(p, vec3(0, 2.0, 2.0), vec3(0.3, 0.3, 0.3)));
     o = unionSDF(o, segmentSDF(p, vec3(0, 0, 0), vec3(0.0, 2.0, 0), 0.3));
+    o = unionSDF(o, torusSDF(p, 1.1, 0.3));
 
-    return isoSurfaceSDF(o, 0.1);
+    return isoSurfaceSDF(o, 0.0);
 }
 
 /**
