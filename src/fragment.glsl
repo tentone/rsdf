@@ -64,6 +64,17 @@ float sphereSDF(vec3 p, vec3 origin, float radius) {
 }
 
 /**
+ * SDF for a torus geometry.
+ *
+ * p: Point to test in the surface.
+ * t: Shape of the torus
+ */
+float torusSDF(vec3 p, vec2 t) {
+    vec2 q = vec2(length(p.xz) - t.x, py);
+    return length(q) - t.y;
+}
+
+/**
  * SDF for a cube centered at the origin with width = height = length = 2.0
  *
  * p: Point to test in the cube
