@@ -54,10 +54,15 @@ fn main() {
     // Window resolution
     let resolution: [f32;  2] = [1024.0, 768.0];
 
-    let eye: [f32; 3] = [8.0, 5.0, 7.0];
+    let mut eye: [f32; 3] = [8.0, 5.0, 7.0];
+
+    // Time of the last frame.
+    let mut last_time: f32 = 0.0;
 
     event_loop.run(move |event: Event<()>, _, control_flow| {
-        let time = start.elapsed().as_secs_f32();
+        let time: f32 = start.elapsed().as_secs_f32();
+        let delta: f32 = time - last_time;
+        last_time = time;
 
         let uniforms = &uniform! {
             resolution: resolution,
@@ -78,6 +83,23 @@ fn main() {
                     return;
                 },
                 _ => return,
+            },
+            glutin::event::Event::DeviceEvent { event, device_id } => match event {
+                glutin::event::DeviceEvent::Key(kin) => {
+                    let speed: f32 = 750.0 * delta;
+
+                    // W
+                    if kin.scancode == 17 { eye[1] += speed; }
+                    // S
+                    if kin.scancode == 31 { eye[1] -= speed; }
+                    // A
+                    if kin.scancode == 30 { eye[0] -= speed; }
+                    // D
+                    if kin.scancode == 32 { eye[0] += speed; }
+
+                    // println!("DeviceEvent Key: {:?} DeviceId: {:?}", kin, device_id);
+                },
+                _ => {},
             },
             _ => (),
         }

@@ -5,6 +5,7 @@ out vec4 color;
 // Uniform values
 uniform float time;
 uniform vec2 resolution;
+uniform vec3 eye;
 
 // Ray marching configuration
 const int MAX_MARCHING_STEPS = 255;
@@ -253,7 +254,6 @@ void main() {
     vec2 fragCoord = gl_FragCoord.xy;
 
     vec3 viewDir = rayDirection(60.0, resolution.xy, fragCoord);
-    vec3 eye = vec3(8.0, 5.0, 7.0);
 
     mat4 viewToWorld = viewMatrix(eye, vec3(0.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0));
     vec3 worldDir = (viewToWorld * vec4(viewDir, 0.0)).xyz;
