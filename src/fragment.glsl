@@ -111,6 +111,15 @@ float isoSurfaceSDF(float a, float r) {
 }
 
 /**
+ * https://www.iquilezles.org/www/articles/smin/smin.htm
+ */
+float smin(float a, float b, float k)
+{
+    float h = max( k-abs(a-b), 0.0 )/k;
+    return min( a, b ) - h*h*h*k*(1.0/6.0);
+}
+
+/**
  * SDF describing the scene.
  * Absolute value of the return value indicates the distance to the surface.
  * Sign indicates whether the point is inside or outside the surface,negative indicating inside.
@@ -120,9 +129,10 @@ float isoSurfaceSDF(float a, float r) {
 float sceneSDF(vec3 p) {
     float o = sphereSDF(p, vec3(-0.6, 0, 0), 0.5);
     o = unionSDF(o, sphereSDF(p, vec3(0.6, 0, 0), 0.5));
-    o = unionSDF(o, cubeSDF(p, vec3(0, 2.0, 2.0), vec3(0.3, 0.3, 0.3)));
+    o = unionSDF(o, cubeSDF(p, vec3(0, 2.0, 2.0), vec3(0.6, 0.3, 0.3)));
+    o = smin(o, cubeSDF(p, vec3(0, 2.5, 2.3), vec3(0.3, 0.6, 0.3)), 0.4);
     o = unionSDF(o, segmentSDF(p, vec3(0, 0, 0), vec3(0.0, 2.0, 0), 0.3));
-    o = unionSDF(o, torusSDF(p, 1.1, 0.3));
+    // o = unionSDF(o, torusSDF(p, 1.1, 0.3));
 
     return isoSurfaceSDF(o, 0.0);
 }
