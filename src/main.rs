@@ -24,7 +24,7 @@ implement_vertex!(Vertex, position);
 fn main() {
     let window: WindowBuilder = glutin::window::WindowBuilder::new()
         .with_title("RSDF")
-        .with_resizable(false)
+        .with_resizable(true)
         .with_inner_size(glutin::dpi::LogicalSize::new(1024.0, 768.0));
 
     let context: ContextBuilder<NotCurrent> = glutin::ContextBuilder::new();
@@ -42,6 +42,7 @@ fn main() {
         Vertex{position: [1.0,  1.0]},
         Vertex{position: [-1.0, -1.0]}
     ];
+
     let vertex_buffer = glium::VertexBuffer::new(&display, &quad).unwrap();
     let indices = glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);
 
