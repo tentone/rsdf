@@ -1,7 +1,9 @@
 extern crate glium;
 extern crate glutin;
+extern crate image;
 
 use std::time::Instant;
+use std::io::Cursor;
 
 use glium::{Display, Frame};
 use glutin::window::WindowBuilder;
@@ -11,15 +13,18 @@ use glutin::event::Event;
 use glium::Surface;
 use glium::implement_vertex;
 use glium::uniform;
+use image::RgbaImage;
 
 // Structure to represent a vertex
 #[derive(Copy, Clone)]
 struct Vertex {
     // Position of the vertex in x, y
     position: [f32; 2],
+    // UV mapping for the position
+    uv: [f32; 2],
 }
 
-implement_vertex!(Vertex, position);
+implement_vertex!(Vertex, position, uv);
 
 fn main() {
     let window: WindowBuilder = glutin::window::WindowBuilder::new()
@@ -35,13 +40,18 @@ fn main() {
 
     // Full screen quad
     let quad: Vec<Vertex> = vec![
-        Vertex{position: [-1.0, -1.0]},
-        Vertex{position: [1.0,  1.0]},
-        Vertex{position: [1.0, -1.0]},
-        Vertex{position: [-1.0, 1.0]},
-        Vertex{position: [1.0,  1.0]},
-        Vertex{position: [-1.0, -1.0]}
+        Vertex{position: [-1.0, -1.0], uv: [0.0, 0.0]},
+        Vertex{position: [1.0,  1.0], uv: [1.0, 1.0]},
+        Vertex{position: [1.0, -1.0], uv: [1.0, 0.0]},
+        Vertex{position: [-1.0, 1.0], uv: [0.0, 1.0]},
+        Vertex{position: [1.0,  1.0], uv: [1.0, 1.0]},
+        Vertex{position: [-1.0, -1.0], uv: [0.0, 0.0]}
     ];
+
+    let image: RgbaImage = image::load(Cursor::new(&include_bytes!("./textures/noise.png")[..]), image::ImageFormat::Png).unwrap().to_rgba8();
+    let dimension = image.dimensions();
+    let image = glium::texture::RawImage2d::from_raw_rgba_reversed(&image.into_raw(), dimension);
+    let texture = glium::texture::Texture2d::new(&display, image).unwrap();
 
     let vertex_buffer = glium::VertexBuffer::new(&display, &quad).unwrap();
     let indices = glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);
@@ -69,6 +79,7 @@ fn main() {
             resolution: resolution,
             time: time,
             eye: eye,
+            tex: &texture,
         };
 
         let mut frame: Frame = display.draw();

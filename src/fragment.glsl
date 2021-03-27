@@ -2,6 +2,10 @@
 
 out vec4 color;
 
+in vec2 v_uv;
+
+uniform sampler2D tex;
+
 // Uniform values
 uniform float time;
 uniform vec2 resolution;
@@ -285,7 +289,7 @@ void main() {
 
     // Didn't hit anything draw background
     if (dist > MAX_DIST - EPSILON) {
-        color = vec4(0.0, 0.0, 0.0, 0.0);
+        color = vec4(texture(tex, v_uv).rgb, 0.0);
         return;
     }
 
