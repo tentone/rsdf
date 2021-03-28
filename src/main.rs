@@ -55,7 +55,7 @@ fn main() {
     let path = Path::new("./textures/noise.png");
     let display = path.display();
 
-    // Read texture file contents
+    // Read texture file content
     let mut file = match File::open(&path) {
         Ok(file) => file,
         Err(why) => panic!("Could not read file {}", why),
@@ -68,6 +68,9 @@ fn main() {
     let dimension = image.dimensions();
     let image = glium::texture::RawImage2d::from_raw_rgba_reversed(&image.into_raw(), dimension);
     let texture = glium::texture::Texture2d::new(&display, image).unwrap();
+        /* sampled().
+        magnify_filter(glium::uniforms::MagnifySamplerFilter::Nearest).
+        unwrap();*/
 
     // Create quad vertex buffer
     let vertex_buffer = glium::VertexBuffer::new(&display, &quad).unwrap();
@@ -122,7 +125,7 @@ fn main() {
             resolution: resolution,
             time: time,
             eye: eye,
-            tex: &texture,
+            tex: &texture
         };
 
         frame.clear_color(0.0, 0.0, 0.0, 1.0);
