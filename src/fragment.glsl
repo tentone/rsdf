@@ -115,30 +115,27 @@ float isoSurfaceSDF(float a, float r) {
 }
 
 /**
+ * Smooth union between two SDF.
+ *
  * https://www.iquilezles.org/www/articles/smin/smin.htm
+ *
+ * a: SDF result a to be joined.
+ * b: SDF result b to be joined.
+ * k: Constant of smoothness to be applied in the union.
  */
-float smin(float a, float b, float k)
-{
-    float h = max( k-abs(a-b), 0.0 )/k;
-    return min( a, b ) - h*h*h*k*(1.0/6.0);
+float smin(float a, float b, float k) {
+    float h = max(k-abs(a-b), 0.0)/k;
+    return min(a, b) - h*h*h*k*(1.0/6.0);
 }
 
 /**
- * SDF describing the scene.
- * Absolute value of the return value indicates the distance to the surface.
- * Sign indicates whether the point is inside or outside the surface,negative indicating inside.
+ * Apply noise to a SDF using noise texture.
  *
- * p: Point to test in the scene
+ * d: Distance to apply noise to.
  */
-float sceneSDF(vec3 p) {
-    float o = sphereSDF(p, vec3(-0.6, 0, 0), 0.5);
-    o = unionSDF(o, sphereSDF(p, vec3(0.6, 0, 0), 0.5));
-    o = unionSDF(o, cubeSDF(p, vec3(0, 2.0, 2.0), vec3(0.6, 0.3, 0.3)));
-    o = smin(o, cubeSDF(p, vec3(0, 2.5, 2.3), vec3(0.3, 0.6, 0.3)), 0.4);
-    o = unionSDF(o, segmentSDF(p, vec3(0, 0, 0), vec3(0.0, 2.0, 0), 0.3));
-    // o = unionSDF(o, torusSDF(p, 1.1, 0.3));
-
-    return isoSurfaceSDF(o, 0.0);
+float noise(float a) {
+    a += texture(tex, v_uv).r;
+    return a;
 }
 
 /**
@@ -276,6 +273,25 @@ mat4 viewMatrix(vec3 eye, vec3 center, vec3 up) {
         vec4(0.0, 0.0, 0.0, 1)
     );
 }
+
+/**
+ * SDF describing the scene.
+ * Absolute value of the return value indicates the distance to the surface.
+ * Sign indicates whether the point is inside or outside the surface,negative indicating inside.
+ *
+ * p: Point to test in the scene
+ */
+float sceneSDF(vec3 p) {
+    float o = sphereSDF(p, vec3(-0.6, 0, 0), 0.5);
+    o = unionSDF(o, sphereSDF(p, vec3(0.6, 0, 0), 0.5));
+    o = unionSDF(o, cubeSDF(p, vec3(0, 2.0, 2.0), vec3(0.6, 0.3, 0.3)));
+    o = smin(o, cubeSDF(p, vec3(0, 2.5, 2.3), vec3(0.3, 0.6, 0.3)), 0.4);
+    o = unionSDF(o, segmentSDF(p, vec3(0, 0, 0), vec3(0.0, 2.0, 0), 0.3));
+    // o = unionSDF(o, torusSDF(p, 1.1, 0.3));
+
+    return noise(o);
+}
+
 
 void main() {
     vec2 fragCoord = gl_FragCoord.xy;
