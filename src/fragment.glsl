@@ -132,10 +132,29 @@ float smin(float a, float b, float k) {
  * Apply noise to a SDF using noise texture.
  *
  * d: Distance to apply noise to.
+ * scale: Scale of the noise to be applied
  */
-float noise(float a) {
-    a += texture(tex, v_uv).r;
+float noise(float a, float scale) {
+    a += texture(tex, v_uv).r / (255.0 / scale);
     return a;
+}
+
+/**
+ * SDF describing the scene.
+ * Absolute value of the return value indicates the distance to the surface.
+ * Sign indicates whether the point is inside or outside the surface,negative indicating inside.
+ *
+ * p: Point to test in the scene
+ */
+float sceneSDF(vec3 p) {
+    float o = sphereSDF(p, vec3(-0.6, 0, 0), 0.5);
+    o = unionSDF(o, sphereSDF(p, vec3(0.6, 0, 0), 0.5));
+    o = unionSDF(o, cubeSDF(p, vec3(0, 2.0, 2.0), vec3(0.6, 0.3, 0.3)));
+    o = smin(o, cubeSDF(p, vec3(0, 2.5, 2.3), vec3(0.3, 0.6, 0.3)), 0.4);
+    o = unionSDF(o, segmentSDF(p, vec3(0, 0, 0), vec3(0.0, 2.0, 0), 0.3));
+    // o = unionSDF(o, torusSDF(p, 1.1, 0.3));
+
+    return noise(o, 4.0);
 }
 
 /**
@@ -273,25 +292,6 @@ mat4 viewMatrix(vec3 eye, vec3 center, vec3 up) {
         vec4(0.0, 0.0, 0.0, 1)
     );
 }
-
-/**
- * SDF describing the scene.
- * Absolute value of the return value indicates the distance to the surface.
- * Sign indicates whether the point is inside or outside the surface,negative indicating inside.
- *
- * p: Point to test in the scene
- */
-float sceneSDF(vec3 p) {
-    float o = sphereSDF(p, vec3(-0.6, 0, 0), 0.5);
-    o = unionSDF(o, sphereSDF(p, vec3(0.6, 0, 0), 0.5));
-    o = unionSDF(o, cubeSDF(p, vec3(0, 2.0, 2.0), vec3(0.6, 0.3, 0.3)));
-    o = smin(o, cubeSDF(p, vec3(0, 2.5, 2.3), vec3(0.3, 0.6, 0.3)), 0.4);
-    o = unionSDF(o, segmentSDF(p, vec3(0, 0, 0), vec3(0.0, 2.0, 0), 0.3));
-    // o = unionSDF(o, torusSDF(p, 1.1, 0.3));
-
-    return noise(o);
-}
-
 
 void main() {
     vec2 fragCoord = gl_FragCoord.xy;
