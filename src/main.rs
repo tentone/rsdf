@@ -3,17 +3,21 @@ extern crate glutin;
 extern crate image;
 
 use std::time::Instant;
-use std::io::Cursor;
+use std::io::{Cursor, Read};
+use std::fs::File;
 
-use glium::{Display, Frame};
+use image::RgbaImage;
+
 use glutin::window::WindowBuilder;
 use glutin::event_loop::EventLoop;
 use glutin::{ContextBuilder, NotCurrent};
 use glutin::event::Event;
+
+use glium::Display;
+use glium::Frame;
 use glium::Surface;
 use glium::implement_vertex;
 use glium::uniform;
-use image::RgbaImage;
 
 // Structure to represent a vertex
 #[derive(Copy, Clone)]
@@ -48,24 +52,19 @@ fn main() {
         Vertex{position: [-1.0, -1.0], uv: [0.0, 0.0]}
     ];
 
-    let image: RgbaImage = image::load(Cursor::new(&include_bytes!("./textures/noise.png")[..]), image::ImageFormat::Png).unwrap().to_rgba8();
-    let dimension = image.dimensions();
-    let image = glium::texture::RawImage2d::from_raw_rgba_reversed(&image.into_raw(), dimension);
-    let texture = glium::texture::Texture2d::new(&display, image).unwrap();
-
     // Read texture file content
-    /*let mut file = match File::open(&path) {
+    let mut file = match File::open("./textures/noise.png") {
         Ok(file) => file,
         Err(why) => panic!("Could not read file {}", why),
     };
     let mut texture_data: Vec<u8> = Vec::new();
-    file.read_to_end(&mut texture_data);*/
+    file.read_to_end(&mut texture_data);
 
     // Create noise texture from data
-    /* let image: RgbaImage = image::load(Cursor::new(texture_data), image::ImageFormat::Png).unwrap().to_rgba8();
+    let image: RgbaImage = image::load(Cursor::new(texture_data), image::ImageFormat::Png).unwrap().to_rgba8();
     let dimension = image.dimensions();
     let image = glium::texture::RawImage2d::from_raw_rgba_reversed(&image.into_raw(), dimension);
-    let texture = glium::texture::Texture2d::new(&display, image).unwrap();*/
+    let texture = glium::texture::Texture2d::new(&display, image).unwrap();
 
 
     let vertex_buffer = glium::VertexBuffer::new(&display, &quad).unwrap();
@@ -119,7 +118,7 @@ fn main() {
             resolution: resolution,
             time: time,
             eye: eye,
-            tex: &texture,
+            tex: &texture
         };
 
         frame.clear_color(0.0, 0.0, 0.0, 1.0);
