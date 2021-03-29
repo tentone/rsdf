@@ -64,10 +64,10 @@ fn main() {
     file.read_to_end(&mut texture_data);
 
     // Create noise texture from data
-    // let image: RgbaImage = image::load(Cursor::new(texture_data), image::ImageFormat::Png).unwrap().to_rgba8();
-    // let dimension = image.dimensions();
-    // let image = glium::texture::RawImage2d::from_raw_rgba_reversed(&image.into_raw(), dimension);
-    // let texture = glium::texture::Texture2d::new(&display, image).unwrap();
+    let image: RgbaImage = image::load(Cursor::new(texture_data), image::ImageFormat::Png).unwrap().to_rgba8();
+    let dimension = image.dimensions();
+    let image = glium::texture::RawImage2d::from_raw_rgba_reversed(&image.into_raw(), dimension);
+    let texture = glium::texture::Texture2d::new(&display, image).unwrap();
         /* sampled().
         magnify_filter(glium::uniforms::MagnifySamplerFilter::Nearest).
         unwrap();*/
