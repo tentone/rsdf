@@ -3,7 +3,7 @@ extern crate glutin;
 extern crate image;
 
 use std::time::Instant;
-use std::io::{Cursor, Read, Error};
+use std::io::Cursor;
 
 use glium::{Display, Frame};
 use glutin::window::WindowBuilder;
@@ -14,15 +14,12 @@ use glium::Surface;
 use glium::implement_vertex;
 use glium::uniform;
 use image::RgbaImage;
-use std::fs::File;
-use std::path::Path;
 
 // Structure to represent a vertex
 #[derive(Copy, Clone)]
 struct Vertex {
     // Position of the vertex in x, y
     position: [f32; 2],
-
     // UV mapping for the position
     uv: [f32; 2],
 }
@@ -51,34 +48,26 @@ fn main() {
         Vertex{position: [-1.0, -1.0], uv: [0.0, 0.0]}
     ];
 
-    // Create a path to the desired file
-    let path = Path::new("./textures/noise.png");
-    let display = path.display();
-
-    // Read texture file content
-    // let mut file = match File::open(&path) {
-    //     Ok(file) => file,
-    //     Err(why) => panic!("Could not read file {}", why),
-    // };
-    // let mut texture_data: Vec<u8> = Vec::new();
-    // file.read_to_end(&mut texture_data);
-
-    // Create noise texture from data
-    /*let image: RgbaImage = image::load(Cursor::new(texture_data), image::ImageFormat::Png).unwrap().to_rgba8();
-    let dimension = image.dimensions();
-    let image = glium::texture::RawImage2d::from_raw_rgba_reversed(&image.into_raw(), dimension);
-    let texture = glium::texture::Texture2d::new(&display, image).unwrap();*/
-
     let image: RgbaImage = image::load(Cursor::new(&include_bytes!("./textures/noise.png")[..]), image::ImageFormat::Png).unwrap().to_rgba8();
     let dimension = image.dimensions();
     let image = glium::texture::RawImage2d::from_raw_rgba_reversed(&image.into_raw(), dimension);
     let texture = glium::texture::Texture2d::new(&display, image).unwrap();
 
-    /* sampled().
-    magnify_filter(glium::uniforms::MagnifySamplerFilter::Nearest).
-    unwrap();*/
+    // Read texture file content
+    /*let mut file = match File::open(&path) {
+        Ok(file) => file,
+        Err(why) => panic!("Could not read file {}", why),
+    };
+    let mut texture_data: Vec<u8> = Vec::new();
+    file.read_to_end(&mut texture_data);*/
 
-    // Create quad vertex buffer
+    // Create noise texture from data
+    /* let image: RgbaImage = image::load(Cursor::new(texture_data), image::ImageFormat::Png).unwrap().to_rgba8();
+    let dimension = image.dimensions();
+    let image = glium::texture::RawImage2d::from_raw_rgba_reversed(&image.into_raw(), dimension);
+    let texture = glium::texture::Texture2d::new(&display, image).unwrap();*/
+
+
     let vertex_buffer = glium::VertexBuffer::new(&display, &quad).unwrap();
     let indices = glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);
 
@@ -120,7 +109,6 @@ fn main() {
         let delta: f32 = time - last_time;
         last_time = time;
 
-
         let mut frame: Frame = display.draw();
         let (w, h) = frame.get_dimensions();
 
@@ -131,7 +119,7 @@ fn main() {
             resolution: resolution,
             time: time,
             eye: eye,
-            tex: &texture
+            tex: &texture,
         };
 
         frame.clear_color(0.0, 0.0, 0.0, 1.0);
