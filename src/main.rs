@@ -118,7 +118,7 @@ fn main() {
             resolution: resolution,
             time: time,
             eye: eye,
-            tex: &texture
+            noise_text: &texture
         };
 
         frame.clear_color(0.0, 0.0, 0.0, 1.0);

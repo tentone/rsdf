@@ -4,7 +4,7 @@ out vec4 color;
 
 in vec2 v_uv;
 
-uniform sampler2D tex;
+uniform sampler2D noise_text;
 
 // Uniform values
 uniform float time;
@@ -135,7 +135,7 @@ float smin(float a, float b, float k) {
  * scale: Scale of the noise to be applied
  */
 float noise(float a, float scale) {
-    a += texture(tex, v_uv).r / (255.0 / scale);
+    a += texture(noise_text, v_uv).r / (255.0 / scale);
     return a;
 }
 
@@ -305,7 +305,7 @@ void main() {
 
     // Didn't hit anything draw background
     if (dist > MAX_DIST - EPSILON) {
-        color = vec4(texture(tex, v_uv).rgb, 0.0);
+        color = vec4(texture(noise_text, v_uv).rgb, 0.0);
         return;
     }
 
