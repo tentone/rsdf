@@ -9,3 +9,5 @@ if cargo "$@"; then
     [ -d "$DIR/target/release" ] && cp -r "$DIR/resources" "$DIR/target/release/resources"
 fi
 
+cd target/debug
+./rsdf

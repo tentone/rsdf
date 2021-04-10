@@ -42,7 +42,6 @@ float differenceSDF(float a, float b) {
     return max(a, -b);
 }
 
-
 /**
  * SDF for a segment that start in a and ends in b with radius r.
  *
