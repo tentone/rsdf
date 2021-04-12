@@ -5,7 +5,11 @@ cargo build
 
 echo " - Copy textures"
 DIR="$(dirname "$0")"
-cp -r "./src/textures" "./target/debug/textures"
+
+if cargo "$@"; then
+    [ -d "$DIR/target/debug" ] && cp -r "$DIR/resources" "$DIR/target/debug/resources"
+    [ -d "$DIR/target/release" ] && cp -r "$DIR/resources" "$DIR/target/release/resources"
+fi
 
 echo " - Run code"
 cd target/debug
