@@ -30,23 +30,6 @@ struct Vertex {
 
 implement_vertex!(Vertex, position, uv);
 
-fn create_texture(fname: &str, display: glium::Display) -> glium::texture::Texture2d {
-    // Read texture file content
-    let mut file = match File::open(*fname) {
-        Ok(file) => file,
-        Err(why) => panic!("Could not read file {}", why),
-    };
-    let mut texture_data: Vec<u8> = Vec::new();
-    file.read_to_end(&mut texture_data);
-
-    // Create noise texture from data
-    let image: RgbaImage = image::load(Cursor::new(texture_data), image::ImageFormat::Png).unwrap().to_rgba8();
-    let dimension = image.dimensions();
-    let image = glium::texture::RawImage2d::from_raw_rgba_reversed(&image.into_raw(), dimension);
-
-    glium::texture::Texture2d::new(&display, image).unwrap();
-}
-
 fn main() {
     let window: WindowBuilder = glutin::window::WindowBuilder::new()
         .with_title("RSDF")
@@ -69,8 +52,20 @@ fn main() {
         Vertex{position: [-1.0, -1.0], uv: [0.0, 0.0]}
     ];
 
+    // Read texture file content
+    let mut file = match File::open("./textures/noise.png") {
+        Ok(file) => file,
+        Err(why) => panic!("Could not read file {}", why),
+    };
+    let mut texture_data: Vec<u8> = Vec::new();
+    file.read_to_end(&mut texture_data);
 
-    let texture = create_texture("./textures/noise.png", display);
+    // Create noise texture from data
+    let image: RgbaImage = image::load(Cursor::new(texture_data), image::ImageFormat::Png).unwrap().to_rgba8();
+    let dimension = image.dimensions();
+    let image = glium::texture::RawImage2d::from_raw_rgba_reversed(&image.into_raw(), dimension);
+    let texture = glium::texture::Texture2d::new(&display, image).unwrap();
+
 
     let vertex_buffer = glium::VertexBuffer::new(&display, &quad).unwrap();
     let indices = glium::index::NoIndices(glium::index::PrimitiveType::TrianglesList);
