@@ -1,4 +1,9 @@
+echo " - Build code"
 cargo build
-cd target/debug
+
+echo " - Copy textures"
 xcopy /E /I "src\textures" "target\debug\textures"
+
+echo " - Run code"
+cd target/debug
 rsdf.exe
