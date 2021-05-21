@@ -9,4 +9,4 @@ cp -r "./src/textures" "./target/debug/textures"
 
 echo " - Run code"
 cd target/debug
-./rsdf
+rsdf.exe
