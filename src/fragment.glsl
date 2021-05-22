@@ -70,10 +70,12 @@ float sphereSDF(vec3 p, vec3 origin, float radius) {
  * SDF for a torus geometry.
  *
  * p: Point to test in the surface.
+ * o: Center point of the torus.
  * r: Radius of the torus
  * t: Thickness of the torus arc.
  */
-float torusSDF(vec3 p, float r, float t) {
+float torusSDF(vec3 p, vec3 o, float r, float t) {
+    p -= o;
     vec2 q = vec2(length(p.xz) - r, p.y);
     return length(q) - t;
 }
@@ -99,6 +101,36 @@ float cubeSDF(vec3 p, vec3 center, vec3 size) {
     float outsideDistance = length(max(d, 0.0));
 
     return insideDistance + outsideDistance;
+}
+
+/**
+ * Plane SDF.
+ *
+ * p: Point to test in the plane.
+ * h: Height of the plane.
+ */
+float planeSDF(vec3 p, float h)
+{
+    return p.y - h;
+}
+
+/**
+ * SDF for a hexagonal prism.
+ *
+ * p: Point to test in the prism.
+ * h: Size of the prism.
+ */
+float hexPrismSDF(vec3 p, vec2 h)
+{
+    vec3 q = abs(p);
+
+    const vec3 k = vec3(-0.8660254, 0.5, 0.57735);
+    p = abs(p);
+    p.xy -= 2.0*min(dot(k.xy, p.xy), 0.0)*k.xy;
+
+    vec2 d = vec2(length(p.xy - vec2(clamp(p.x, -k.z*h.x, k.z*h.x), h.x))*sign(p.y - h.x), p.z-h.y);
+
+    return min(max(d.x,d.y),0.0) + length(max(d,0.0));
 }
 
 /**
@@ -146,14 +178,15 @@ float noise(float a, float scale) {
  * p: Point to test in the scene
  */
 float sceneSDF(vec3 p) {
-    float o = sphereSDF(p, vec3(-0.6, 0, 0), 0.5);
-    o = unionSDF(o, sphereSDF(p, vec3(0.6, 0, 0), 0.5));
+    float o = sphereSDF(p, vec3(-0.8, 0, 0), 0.5);
     o = unionSDF(o, cubeSDF(p, vec3(0, 2.0, 2.0), vec3(0.6, 0.3, 0.3)));
     o = smin(o, cubeSDF(p, vec3(0, 2.5, 2.3), vec3(0.3, 0.6, 0.3)), 0.4);
     o = unionSDF(o, segmentSDF(p, vec3(0, 0, 0), vec3(0.0, 2.0, 0), 0.3));
-    // o = unionSDF(o, torusSDF(p, 1.1, 0.3));
+    o = unionSDF(o, torusSDF(p, vec3(0, 1.0, 0), 1.1, 0.3));
 
-    return noise(o, 4.0);
+    o = unionSDF(o, planeSDF(p, -0.5));
+
+    return o; // noise(o, 4.0);
 }
 
 /**
