@@ -1,5 +1,6 @@
 # Rust SDF
 - Small SDF (Signed Distance Field) rendering experiments using Rust and OpenGL.
+- Implements a simple renderer for SDF and Phong illumination model (just to be able to observe the surfaces with some lighting).
 - With support for desktop OpenGL and WebGL trough web assembly (check [geotoy](https://github.com/fitzgen/geotoy/tree/master/src) for an example using WASM and glium)
 - [glium](https://docs.rs/glium/0.29.0/glium/) and [glutin](https://docs.rs/glutin/0.26.0/glutin/) are used to access OpenGL and obtain access to a window and input.
 
