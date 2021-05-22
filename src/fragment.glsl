@@ -178,15 +178,15 @@ float noise(float a, float scale) {
  * p: Point to test in the scene
  */
 float sceneSDF(vec3 p) {
-    float o = sphereSDF(p, vec3(-0.8, 0, 0), 0.5);
+    float o = noise(sphereSDF(p, vec3(-0.8, 1.0, -1.5), 0.5), 20.0);
     o = unionSDF(o, cubeSDF(p, vec3(0, 2.0, 2.0), vec3(0.6, 0.3, 0.3)));
     o = smin(o, cubeSDF(p, vec3(0, 2.5, 2.3), vec3(0.3, 0.6, 0.3)), 0.4);
-    o = unionSDF(o, segmentSDF(p, vec3(0, 0, 0), vec3(0.0, 2.0, 0), 0.3));
+    o = unionSDF(o, segmentSDF(p, vec3(-1.0, 0, 0), vec3(1.0, 2.0, 0), 0.3));
     o = unionSDF(o, torusSDF(p, vec3(0, 1.0, 0), 1.1, 0.3));
 
     o = unionSDF(o, planeSDF(p, -0.5));
 
-    return o; // noise(o, 4.0);
+    return o;
 }
 
 /**
