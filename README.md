@@ -3,7 +3,7 @@
 - With support for desktop OpenGL and WebGL trough web assembly (check [geotoy](https://github.com/fitzgen/geotoy/tree/master/src) for an example using WASM and glium)
 - [glium](https://docs.rs/glium/0.29.0/glium/) and [glutin](https://docs.rs/glutin/0.26.0/glutin/) are used to access OpenGL and obtain access to a window and input.
 
-<img src="https://raw.githubusercontent.com/tentone/rsdf/master/readme/a.png" width="380"><img src="https://raw.githubusercontent.com/tentone/rsdf/master/readme/b.png" width="380">
+<img src="https://raw.githubusercontent.com/tentone/rsdf/main/readme/a.png" width="380"><img src="https://raw.githubusercontent.com/tentone/rsdf/main/readme/b.png" width="380">
 
 
 
