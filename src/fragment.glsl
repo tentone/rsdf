@@ -337,7 +337,8 @@ void main() {
 
     // Didn't hit anything draw background
     if (dist > MAX_DIST - EPSILON) {
-        color = vec4(texture(noise_text, v_uv).rgb, 0.0);
+        // color = vec4(texture(noise_text, v_uv).rgb, 0.0);
+        color = vec4(0, 0, 0, 1);
         return;
     }
 
